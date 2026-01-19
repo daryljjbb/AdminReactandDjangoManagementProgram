@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'my_app',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -137,9 +138,20 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         # This allows GET requests for everyone, 
         # but requires login for POST, PUT, DELETE
-        "rest_framework.permissions.IsAuthenticatedOrReadOnly", 
+       "rest_framework.permissions.IsAuthenticatedOrReadOnly", 
     ],
 }
+
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 5,
+}
+
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",

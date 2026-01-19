@@ -1,25 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Customers from "./pages/Customers"; // Assuming you have this
+import CustomerDetailPage from "./pages/CustomerDetailPage.jsx";
+import AdminDashboard from "./pages/AdminDashboard";
+import Dashboard from "./pages/Dashboard";
+import Layout from "./components/Layout";
+import Login from "./pages/Login";
+import Register from "./pages/Registration";
+import useAuth from "./hooks/useAuth";
+import { Toaster } from "react-hot-toast";
 
 function App() {
+  const { isAuthenticated, loading } = useAuth();
+  const { isAdmin } = useAuth();
+
+
+  if (loading) return <p className="text-center mt-5">Loading...</p>;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <Router>
+      <Routes>
+        {/* PUBLIC ROUTES (No Layout) */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* PROTECTED ROUTES (With Sidebar/Navbar Layout) */}
+        <Route 
+          element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          {/* These render inside the <Outlet /> of Layout */}
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/customers/:id" element={<CustomerDetailPage />} />
+
+          
+           {/* ADMIN ONLY PAGE */}
+          <Route 
+             path="/admin-dashboard" 
+            element={isAdmin ? <AdminDashboard /> : <Navigate to="/dashboard" />} 
+          />
+
+          {/* Redirect base / to /invoices */}
+        </Route>
+
+        {/* Catch-all redirect */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+      
+      <Toaster position="top-right" />
+    </Router>
   );
 }
 
 export default App;
+
