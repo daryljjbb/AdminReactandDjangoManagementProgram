@@ -10,6 +10,8 @@ const useAuth = () => {
     const checkAuth = async () => {
       try {
         const user = await fetchMe();
+        console.log("fetchMe result:", user);
+
         
         // If the request succeeds, they are authenticated
         // Based on your Django view, an anonymous user has username: ""
@@ -23,6 +25,7 @@ const useAuth = () => {
       } catch (err) {
         setIsAuthenticated(false);
         setIsAdmin(false);
+        console.error("fetchMe failed:", err);
       } finally {
         setLoading(false);
       }
