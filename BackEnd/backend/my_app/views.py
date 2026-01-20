@@ -13,6 +13,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view, permission_classes
 from .serializers import CustomerSerializer, PolicySerializer, InvoiceSerializer, PaymentSerializer
+from datetime import datetime
 
 
 class CustomerListCreateView(generics.ListCreateAPIView):
@@ -143,22 +144,29 @@ class DashboardStatsView(APIView):
 
     def get(self, request):
         user = request.user
-        
+
         if user.is_staff:
             customers = Customer.objects.all()
+            invoices = Invoice.objects.all()
         else:
             customers = Customer.objects.filter(user=user)
+            invoices = Invoice.objects.filter(customer__user=user)
 
-        # --- CALCULATE STATS ---
-        
-        
         customer_count = customers.count()
+        total_revenue = sum(inv.total_amount for inv in invoices if inv.status == "paid")
+        unpaid_count = invoices.filter(status="pending").count()
+        paid_count = invoices.filter(status="paid").count()
+        overdue_count = invoices.filter(status="overdue").count()
 
         return Response({
-            
             "customer_count": customer_count,
+            "total_revenue": total_revenue,
+            "unpaid_count": unpaid_count,
+            "paid_count": paid_count,
+            "overdue_count": overdue_count,
             "is_admin": user.is_staff
         })
+
     
 # ✨ NEW Detail View (REQUIRED for /api/customers/1/)
 class CustomerDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -248,3 +256,28 @@ def update_invoice_status(invoice):
         invoice.status = "paid"
 
     invoice.save()
+
+
+class MonthlyRevenueView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        invoices = Invoice.objects.filter(status="paid")
+
+        data = (
+            invoices
+            .annotate(month=TruncMonth('issue_date'))
+            .values('month')
+            .annotate(total=Sum('total_amount'))
+            .order_by('month')
+        )
+
+        formatted = [
+            {
+                "month": entry["month"].strftime("%b %Y"),
+                "total": entry["total"]
+            }
+            for entry in data
+        ]
+
+        return Response(formatted)
