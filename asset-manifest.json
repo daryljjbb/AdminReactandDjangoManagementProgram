@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/AdminReactandDjangoManagementProgram/static/css/main.3982bb5f.css",
+    "main.js": "/AdminReactandDjangoManagementProgram/static/js/main.e84a1c59.js",
+    "static/js/453.03346f77.chunk.js": "/AdminReactandDjangoManagementProgram/static/js/453.03346f77.chunk.js",
+    "index.html": "/AdminReactandDjangoManagementProgram/index.html",
+    "main.3982bb5f.css.map": "/AdminReactandDjangoManagementProgram/static/css/main.3982bb5f.css.map",
+    "main.e84a1c59.js.map": "/AdminReactandDjangoManagementProgram/static/js/main.e84a1c59.js.map",
+    "453.03346f77.chunk.js.map": "/AdminReactandDjangoManagementProgram/static/js/453.03346f77.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3982bb5f.css",
+    "static/js/main.e84a1c59.js"
+  ]
+}
