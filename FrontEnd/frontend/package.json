@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
+    "gh-pages": "^6.3.0",
     "react": "^19.2.3",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.3",
@@ -23,8 +24,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
+  "homepage": "https://daryljjbb.github.io/AdminReactandDjangoManagementProgram",
   "eslintConfig": {
     "extends": [
       "react-app",

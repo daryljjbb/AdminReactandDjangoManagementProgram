@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Customers from "./pages/Customers"; // Assuming you have this
 import CustomerDetailPage from "./pages/CustomerDetailPage.jsx";
 import AdminDashboard from "./pages/AdminDashboard";
