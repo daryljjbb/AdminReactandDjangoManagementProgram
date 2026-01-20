@@ -1,4 +1,5 @@
 import { Modal, Table } from "react-bootstrap";
+import InvoiceProgressBar from "../components/InvoiceProgressBar";
 
 const PaymentHistoryModal = ({ show, onHide, invoice, payments }) => {
   if (!invoice) return null;
@@ -23,6 +24,18 @@ const PaymentHistoryModal = ({ show, onHide, invoice, payments }) => {
   const cappedPaid = Math.min(totalPaid, invoice.total_amount);
   const remaining = Math.max(invoice.total_amount - totalPaid, 0);
 
+  const total = Number(invoice.total_amount);
+  const paid = Number(invoice.total_paid);
+  const progress = Math.min((paid / total) * 100, 100);
+
+  let barColor = "bg-danger"; // red
+
+  if (progress >= 100) {
+    barColor = "bg-success"; // green
+  } else if (progress >= 25) {
+    barColor = "bg-warning"; // yellow
+  }
+
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>
@@ -33,7 +46,10 @@ const PaymentHistoryModal = ({ show, onHide, invoice, payments }) => {
 
       <Modal.Body>
         <p><strong>Total Amount:</strong> ${invoice.total_amount}</p>
-        <p><strong>Total Paid:</strong> ${cappedPaid.toFixed(2)}</p>
+        <p>
+            <strong>Total Paid:</strong> ${cappedPaid.toFixed(2)}
+            <InvoiceProgressBar total={invoice.total_amount} paid={cappedPaid} />
+        </p>
         <p><strong>Remaining:</strong> ${remaining.toFixed(2)}</p>
 
         <Table striped bordered hover size="sm" className="mt-3">
@@ -62,7 +78,9 @@ const PaymentHistoryModal = ({ show, onHide, invoice, payments }) => {
               <tr key={row.id}>
                 <td>{row.payment_date}</td>
                 <td>${row.amount.toFixed(2)}</td>
-                <td>${row.balance.toFixed(2)}</td>
+                <td>
+                    ${row.balance.toFixed(2)}
+                </td>
                 <td>{row.method}</td>
                 <td>{row.note || "—"}</td>
               </tr>

@@ -10,6 +10,7 @@ import CreatePolicyModal from "../components/CreatePolicyModal";
 import CreateInvoiceModal from "../components/CreateInvoiceModal";
 import CreatePaymentModal from "../components/CreatePaymentModal";
 import PaymentHistoryModal from "../components/PaymentHistoryModal";
+import InvoiceProgressBar from "../components/InvoiceProgressBar";
 
 import { useState } from "react";
 import { Spinner, Alert, Button, Accordion, Table } from "react-bootstrap";
@@ -44,6 +45,20 @@ const CustomerDetailPage = () => {
     removeInvoice,
     reloadInvoices,
   } = useInvoices(isAuthenticated, null, id);
+
+  const total = Number(invoices.total_amount);
+  const paid = Number(invoices.total_paid);
+  const progress = Math.min((paid / total) * 100, 100);
+
+  let barColor = "bg-danger"; // red
+
+  if (progress >= 100) {
+    barColor = "bg-success"; // green
+  } else if (progress >= 25) {
+    barColor = "bg-warning"; // yellow
+  }
+
+
 
   // -----------------------------
   // PAYMENT STATE + HOOK
@@ -176,7 +191,14 @@ const CustomerDetailPage = () => {
                         {policyInvoices.map((inv) => (
                           <tr key={inv.id}>
                             <td>{inv.invoice_number}</td>
-                            <td>${inv.total_amount}</td>
+                            <td>
+                              ${inv.total_amount}
+                              <InvoiceProgressBar
+                                total={inv.total_amount}
+                                paid={inv.total_paid}
+                              />
+                            </td>
+
                             <td>
                               <span
                                 className={`badge bg-${
