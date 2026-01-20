@@ -1,218 +1,268 @@
-import { useParams } from "react-router-dom"; // ✨ Import useParams
+import { useParams } from "react-router-dom";
 import useCustomers from "../hooks/useCustomers";
-import useInvoices from "../hooks/useInvoices";
 import usePolicies from "../hooks/usePolicies";
-import useAuth from "../hooks/useAuth"; // Assuming you need isAuthenticated
+import useInvoices from "../hooks/useInvoices";
+import usePayments from "../hooks/usePayments";
+import useAuth from "../hooks/useAuth";
+
 import ReusableTabs from "../components/ReusableTabs";
-import CreateInvoiceModal from "../components/CreateInvoiceModal";
 import CreatePolicyModal from "../components/CreatePolicyModal";
+import CreateInvoiceModal from "../components/CreateInvoiceModal";
+import CreatePaymentModal from "../components/CreatePaymentModal";
+import PaymentHistoryModal from "../components/PaymentHistoryModal";
+
 import { useState } from "react";
-import { Spinner, Alert, Button, Accordion } from "react-bootstrap";
-import { Table, Form, Pagination} from "react-bootstrap";
-import { Link } from 'react-router-dom';
+import { Spinner, Alert, Button, Accordion, Table } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 const CustomerDetailPage = () => {
-  const { id } = useParams(); // ✨ Get the ID from the URL (/customers/5)
-  const { isAuthenticated } = useAuth();
-  const { isAdmin } = useAuth();
+  const { id } = useParams();
+  const { isAuthenticated, isAdmin } = useAuth();
 
-   const [showModal, setShowModal] = useState(false);
-   
-
-  // Pass isAuthenticated and the ID to the hook
+  // -----------------------------
+  // LOAD CUSTOMER
+  // -----------------------------
   const { customer, loading, error } = useCustomers(isAuthenticated, id);
 
-   const { 
-    policies, 
+  // -----------------------------
+  // LOAD POLICIES
+  // -----------------------------
+  const {
+    policies,
     addPolicy,
-    loadingPolicies, 
-    removePolicy   
-  } = usePolicies(isAuthenticated, null, id); // We pass null for policyId, and 'id' for customerId
+    loadingPolicies,
+    removePolicy,
+  } = usePolicies(isAuthenticated, null, id);
 
-   // Content for the first tab
-const PolicyContent = () => (
+  // -----------------------------
+  // LOAD INVOICES
+  // -----------------------------
+  const {
+    invoices,
+    addInvoice,
+    loadingInvoices,
+    removeInvoice,
+    reloadInvoices,
+  } = useInvoices(isAuthenticated, null, id);
+
+  // -----------------------------
+  // PAYMENT STATE + HOOK
+  // -----------------------------
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
+
+  const {
+    payments,
+    addPayment,
+    reloadPayments,
+  } = usePayments(isAuthenticated, selectedInvoice?.id);
+
+  // -----------------------------
+  // POLICY MODAL STATE
+  // -----------------------------
+  const [showPolicyModal, setShowPolicyModal] = useState(false);
+
+  // -----------------------------
+  // INVOICE MODAL STATE
+  // -----------------------------
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
+
+  // -----------------------------
+  // POLICY TAB
+  // -----------------------------
+  const PolicyContent = () => (
     <div>
-        <Button onClick={() => setShowModal(true)}>Add Policy</Button>
-
+      <Button onClick={() => setShowPolicyModal(true)}>Add Policy</Button>
       <hr />
 
       {policies.length === 0 && !loadingPolicies ? (
         <p className="text-muted">No policies found.</p>
       ) : (
-        <>
-          <Table striped bordered hover responsive>
-            <thead className="table-dark">
-              <tr>
-                <th>Policy Number</th>
-                <th> Policy Type</th>
-                <th>Premium</th>
-                <th>Actions</th>
+        <Table striped bordered hover responsive>
+          <thead className="table-dark">
+            <tr>
+              <th>Policy Number</th>
+              <th>Policy Type</th>
+              <th>Premium</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {policies.map((policy) => (
+              <tr key={policy.id}>
+                <td>{policy.policy_number}</td>
+                <td>{policy.policy_type}</td>
+                <td>{policy.premium_amount}</td>
+                <td>
+                  <Link to={`/policies/${policy.id}`}>View</Link>
+                  {isAdmin && (
+                    <>
+                      <span className="mx-2 text-muted">|</span>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removePolicy(policy.id)}
+                      >
+                        Remove
+                      </Button>
+                    </>
+                  )}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {policies.map((policy) => (
-                <tr key={policy.id}>
-                  <td>{policy.policy_number}</td>
-                  <td>{policy.policy_type}</td>
-                  <td>{policy.premium_amount}</td>
-                  <td>
-                    <Link to={`/policies/${policy.id}`}>View</Link>
-                    
-                    {isAdmin && (
-                      <>
-                        <span className="mx-2 text-muted">|</span>
-                        <Button 
-                          variant="outline-danger" 
-                          size="sm" 
-                          onClick={() => removePolicy(policy.id)}
-                        >
-                          Remove
-                        </Button>
-                      </>
-                    )}
-                  </td>
-                  
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          
-        </>
+            ))}
+          </tbody>
+        </Table>
       )}
     </div>
-);
+  );
 
-const { 
-    invoices, 
-    addInvoice,
-    loadingInvoices, 
-    removeInvoice   
-  } = useInvoices(isAuthenticated, null, id); // We pass null for policyId, and 'id' for customerId
+  // -----------------------------
+  // INVOICE TAB
+  // -----------------------------
+  const InvoiceContent = () => (
+    <div className="p-3 bg-light rounded">
+      <h3 className="text-success mb-2">Invoices</h3>
 
-  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+      {loadingInvoices ? (
+        <Spinner animation="border" size="sm" />
+      ) : policies.length === 0 ? (
+        <p>No policies found, so no invoices can be created.</p>
+      ) : (
+        <Accordion>
+          {policies.map((pol) => {
+            const policyInvoices = invoices.filter(
+              (inv) => inv.policy === pol.id
+            );
 
-  // ✨ NEW: Add state to track the selected policy for the invoice
-  const [selectedPolicy, setSelectedPolicy] = useState(null);
+            return (
+              <Accordion.Item eventKey={String(pol.id)} key={pol.id}>
+                <Accordion.Header>
+                  <div className="d-flex justify-content-between align-items-center w-100 me-3">
+                    <span>
+                      {pol.policy_type.toUpperCase()} — Policy #
+                      {pol.policy_number}
+                    </span>
 
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPolicy(pol);
+                        setShowInvoiceModal(true);
+                      }}
+                    >
+                      + Add Invoice
+                    </Button>
+                  </div>
+                </Accordion.Header>
 
-
-// Content for the second tab
-const InvoiceContent = () => (
-  <div className="p-3 bg-light rounded">
-    <h3 className="text-success mb-2">Invoices</h3>
-
-    {loadingInvoices ? (
-      <Spinner animation="border" size="sm" />
-    ) : policies.length === 0 ? (
-      <p>No policies found, so no invoices can be created.</p>
-    ) : (
-      <Accordion>
-        {policies.map((pol) => {
-          // ✨ FIX 1: Filter the flat array to find invoices for THIS specific policy
-          const policyInvoices = invoices.filter(inv => inv.policy === pol.id);
-
-          return (
-            <Accordion.Item eventKey={String(pol.id)} key={pol.id}>
-              <Accordion.Header>
-                <div className="d-flex justify-content-between align-items-center w-100 me-3">
-                  <span>{pol.policy_type.toUpperCase()} — Policy #{pol.policy_number}</span>
-                  
-                  {/* ✨ FIX 2: Added e.stopPropagation() to prevent Accordion from toggling when clicking button */}
-                  <Button 
-                    size="sm" 
-                    variant="primary"
-                   onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedPolicy(pol);   // store the whole policy object
-                      setShowInvoiceModal(true);
-                    }}
-
-                  >
-                    + Add Invoice
-                  </Button>
-                </div>
-              </Accordion.Header>
-              <Accordion.Body>
-                {policyInvoices.length > 0 ? (
-                  <Table size="sm" striped bordered>
-                    <thead>
-                      <tr>
-                        <th>Inv #</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Due Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {policyInvoices.map(inv => (
-                        <tr key={inv.id}>
-                          <td>{inv.invoice_number}</td>
-                          <td>${inv.total_amount}</td>
-                          <td>
-                             <span className={`badge bg-${inv.status === 'paid' ? 'success' : 'warning'}`}>
-                                {inv.status}
-                             </span>
-                          </td>
-                          <td>{inv.due_date}</td>
+                <Accordion.Body>
+                  {policyInvoices.length > 0 ? (
+                    <Table size="sm" striped bordered>
+                      <thead>
+                        <tr>
+                          <th>Inv #</th>
+                          <th>Amount</th>
+                          <th>Status</th>
+                          <th>Due Date</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                ) : (
-                  <p className="text-muted small">No invoices found for this policy.</p>
-                )}
-              </Accordion.Body>
-            </Accordion.Item>
-          );
-        })}
-      </Accordion>
-    )}
-  </div>
-);
+                      </thead>
 
+                      <tbody>
+                        {policyInvoices.map((inv) => (
+                          <tr key={inv.id}>
+                            <td>{inv.invoice_number}</td>
+                            <td>${inv.total_amount}</td>
+                            <td>
+                              <span
+                                className={`badge bg-${
+                                  inv.status === "paid"
+                                    ? "success"
+                                    : "warning"
+                                }`}
+                              >
+                                {inv.status}
+                              </span>
+                            </td>
+                            <td>{inv.due_date}</td>
 
-// Content for the third tab
-const AppointmentContent = () => (
-  <div className="p-3 bg-light rounded">
-    <h3 className="text-warning mb-2">Appointments</h3>
-    <p>
-        Coming Soon: Schedule and view appointments with this customer.
-    </p>
-  </div>
-);
+                            <td className="d-flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline-success"
+                                onClick={() => {
+                                  setSelectedInvoice(inv);
+                                  setShowPaymentModal(true);
+                                }}
+                              >
+                                + Payment
+                              </Button>
 
+                              <Button
+                                size="sm"
+                                variant="outline-info"
+                                onClick={() => {
+                                  setSelectedInvoice(inv);
+                                  setShowPaymentHistory(true);
+                                }}
+                              >
+                                View Payments
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  ) : (
+                    <p className="text-muted small">
+                      No invoices found for this policy.
+                    </p>
+                  )}
+                </Accordion.Body>
+              </Accordion.Item>
+            );
+          })}
+        </Accordion>
+      )}
+    </div>
+  );
 
-// --- 2. Define the Tab Data Configuration ---
+  // -----------------------------
+  // APPOINTMENT TAB
+  // -----------------------------
+  const AppointmentContent = () => (
+    <div className="p-3 bg-light rounded">
+      <h3 className="text-warning mb-2">Appointments</h3>
+      <p>Coming Soon: Schedule and view appointments with this customer.</p>
+    </div>
+  );
 
-// This array is the only data needed to render the entire tab structure.
-const TABS_DATA = [
-  { 
-    eventKey: 'policies', 
-    title: 'Policies', 
-    content: <PolicyContent /> // Pass the content component here
-  },
-  { 
-    eventKey: 'invoices', 
-    title: 'Invoices', 
-    content: <InvoiceContent /> 
-  },
-  { 
-    eventKey: 'appointments', 
-    title: 'Appointments', 
-    content: <AppointmentContent />,
-  },
-];
+  // -----------------------------
+  // TAB CONFIG
+  // -----------------------------
+  const TABS_DATA = [
+    { eventKey: "policies", title: "Policies", content: <PolicyContent /> },
+    { eventKey: "invoices", title: "Invoices", content: <InvoiceContent /> },
+    { eventKey: "appointments", title: "Appointments", content: <AppointmentContent /> },
+  ];
 
-
+  // -----------------------------
+  // PAGE LOADING STATES
+  // -----------------------------
   if (loading) return <Spinner animation="border" className="m-5" />;
-  
-  if (error) return <Alert variant="danger" className="m-5">{error}</Alert>;
-
-  if (!customer) return <p className="m-5">No customer data found.</p>;
+  if (error) return <Alert variant="danger">{error}</Alert>;
+  if (!customer) return <p>No customer data found.</p>;
 
   return (
     <div className="container mt-4">
-      <Button variant="secondary" href="/customers" className="mb-3">Back to List</Button>
+      <Button variant="secondary" href="/customers" className="mb-3">
+        Back to List
+      </Button>
+
       <div className="card p-4 shadow-sm">
         <h2>Customer Details</h2>
         <hr />
@@ -220,29 +270,53 @@ const TABS_DATA = [
         <p><strong>Name:</strong> {customer.name}</p>
         <p><strong>Email:</strong> {customer.email}</p>
         <p><strong>Phone:</strong> {customer.phone || "N/A"}</p>
-        {/* Add more fields as necessary */}
       </div>
-      <br />
-            <ReusableTabs tabs={TABS_DATA} />
-             <CreatePolicyModal
-                show={showModal}
-                onHide={() => setShowModal(false)}
-                // ✨ THE FIX: Inject the customer ID into the payload here
-                onSubmit={(policyData) => addPolicy({ ...policyData, customer: id })}
-            />
-            {/* ✨ FIX: Invoice Modal now uses selectedPolicyId */}
-            <CreateInvoiceModal
-              show={showInvoiceModal}
-              onHide={() => {
-                setShowInvoiceModal(false);
-                setSelectedPolicy(null);
-              }}
-              policy={selectedPolicy}   // 👈 NEW
-              onSubmit={(invoiceData) =>
-                addInvoice({ ...invoiceData, policy: selectedPolicy?.id })
-              }
-            />
 
+      <br />
+      <ReusableTabs tabs={TABS_DATA} />
+
+      {/* POLICY MODAL */}
+      <CreatePolicyModal
+        show={showPolicyModal}
+        onHide={() => setShowPolicyModal(false)}
+        onSubmit={(policyData) =>
+          addPolicy({ ...policyData, customer: id })
+        }
+      />
+
+      {/* INVOICE MODAL */}
+      <CreateInvoiceModal
+        show={showInvoiceModal}
+        onHide={() => {
+          setShowInvoiceModal(false);
+          setSelectedPolicy(null);
+        }}
+        policy={selectedPolicy}
+        onSubmit={async (invoiceData) => {
+          await addInvoice({ ...invoiceData, policy: selectedPolicy?.id });
+          await reloadInvoices();
+        }}
+      />
+
+      {/* PAYMENT MODAL */}
+      <CreatePaymentModal
+        show={showPaymentModal}
+        onHide={() => setShowPaymentModal(false)}
+        invoice={selectedInvoice}
+        onSubmit={async (paymentData) => {
+          await addPayment(paymentData);
+          await reloadPayments();
+          await reloadInvoices(); // refresh invoice totals
+        }}
+      />
+
+      {/* PAYMENT HISTORY MODAL */}
+      <PaymentHistoryModal
+        show={showPaymentHistory}
+        onHide={() => setShowPaymentHistory(false)}
+        invoice={selectedInvoice}
+        payments={payments}
+      />
     </div>
   );
 };

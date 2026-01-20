@@ -1,90 +1,107 @@
-import ReusableForm from "./ReusableForm";
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
+import { Modal } from "react-bootstrap";
 import { toast } from "react-hot-toast";
-import { useCallback } from "react";
-import { Modal, Button, Form, Alert,Row, Col } from "react-bootstrap";
+import ReusableForm from "./ReusableForm";
 
-const CreateInvoiceModal = ({show, onHide, onSubmit, policy}) => {
+const CreateInvoiceModal = ({ show, onHide, onSubmit, policy }) => {
+  // Hooks MUST come first — always.
+  const today = new Date().toISOString().slice(0, 10);
+
   const initialData = {
-    invoice_number: '',
-    amount: policy?.premium_amount || '0.00', // auto-fill from policy
-    agency_fee: '0.00',
-    status: '',
-    issue_date: '',
-    due_date: '',
+    amount: policy?.premium_amount || 0,
+    agency_fee: 0.0,
+    total_amount: policy?.premium_amount || 0,
+    issue_date: today,
+    due_date: "",
   };
 
   const [formData, setFormData] = useState(initialData);
 
-    const fields = [
-    { name: 'invoice_number', label: 'Invoice Number', type: 'text', required: true },
-    { name: 'issue_date', label: 'Issue Date', type: 'date', required: true },
-    { name: 'due_date', label: 'Due Date', type: 'date', required: true },
-    { name: 'agency_fee', label: 'Agency Fee', type: 'number', required: true },
-    { name: 'amount', label: 'Amount', type: 'number', required: true, readOnly: true },
-        
-    { 
-        name: 'status', 
-        label: 'Status', 
-        type: 'select', 
-        required: true,
-        choices: [
-            { value: 'unpaid', label: 'Unpaid' },
-            { value: 'partial', label: 'Partial Paid' },
-            { value: 'paid', label: 'Paid in Full' },
-        ]
-    },
-    
-  ];
-  const [showModal, setShowModal] = useState(false);
-  const handleClose = () => setShowModal(false);
-
-  // ✨ NEW: Wrapper function to handle the async flow
-  const handleInternalSubmit = async (data) => {
-    try {
-      // 1. Run the actual addCustomer function from the hook
-      await onSubmit(data); 
-      
-      // 2. If successful, close the modal using the prop from parent
-      onHide(); 
-      
-      // 3. Reset the form for the next time it's opened
-      setFormData(initialData); 
-      
-      toast.success("Policy added successfully!");
-    } catch (err) {
-      // Errors are likely handled by the hook/toast already, 
-      // but the modal stays open so the user can see/fix errors.
-      toast.error("Failed to add policy.");
+  useEffect(() => {
+    if (show && policy) {
+      setFormData({
+        amount: policy.premium_amount || 0,
+        agency_fee: 0.0,
+        total_amount: policy.premium_amount || 0,
+        issue_date: today,
+        due_date: "",
+      });
     }
+  }, [show, policy]);
+
+  // After hooks, NOW we can safely early-return
+  if (!policy) return null;
+
+  const fields = [
+    {
+      name: "amount",
+      label: "Base Amount",
+      type: "number",
+      required: true,
+      readOnly: true,
+    },
+    {
+      name: "agency_fee",
+      label: "Agency Fee",
+      type: "number",
+      required: true,
+    },
+    {
+      name: "total_amount",
+      label: "Total Amount",
+      type: "number",
+      required: true,
+    },
+    {
+      name: "issue_date",
+      label: "Issue Date",
+      type: "date",
+      required: true,
+    },
+    {
+      name: "due_date",
+      label: "Due Date",
+      type: "date",
+      required: true,
+    },
+  ];
+
+  const handleSubmit = async (data) => {
+    const total = Number(data.amount) + Number(data.agency_fee);
+
+    if (total <= 0) {
+      toast.error("Total amount must be greater than zero.");
+      return;
+    }
+
+    await onSubmit({
+      ...data,
+      total_amount: total,
+      policy: policy.id,
+    });
+
+    onHide();
   };
 
-  useEffect(() => {
-  if (policy) {
-    setFormData((prev) => ({
-      ...prev,
-      amount: policy.premium_amount,
-    }));
-  }
-}, [policy, show]);
-
-  
-
   return (
-    <Modal show={show} onHide={onHide} size="lg">
+    <Modal show={show} onHide={onHide}>
       <Modal.Header closeButton>
-        <Modal.Title>Add Invoice</Modal.Title>
+        <Modal.Title>Create Invoice</Modal.Title>
       </Modal.Header>
+
       <Modal.Body>
-         <ReusableForm
+        <p>
+          <strong>Policy:</strong> {policy.policy_type} — #{policy.policy_number}
+        </p>
+
+        <ReusableForm
           fields={fields}
           initialData={formData}
           setFormData={setFormData}
-          onSubmit={handleInternalSubmit} // ✨ Use the wrapper here
-      />
-     </Modal.Body>
+          onSubmit={handleSubmit}
+        />
+      </Modal.Body>
     </Modal>
-    
   );
 };
 

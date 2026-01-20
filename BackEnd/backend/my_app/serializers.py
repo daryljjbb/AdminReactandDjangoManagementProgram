@@ -49,13 +49,33 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class InvoiceSerializer(serializers.ModelSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
+    total_paid = serializers.SerializerMethodField()
     customer = serializers.PrimaryKeyRelatedField(source='policy.customer', read_only=True)
     customer_name = serializers.CharField(source='policy.customer.name', read_only=True)
 
     class Meta:
         model = Invoice
-        fields = "__all__"
+        fields = [
+            'id',
+            'invoice_number',
+            'policy',
+            'customer',
+            'customer_name',
+            'amount',
+            'total_amount',
+            'balance_due',
+            'status',
+            'issue_date',
+            'due_date',
+            'agency_fee',
+            'payments',
+            'total_paid',  # 👈 ADD THIS
+        ]
         read_only_fields = ['amount', 'total_amount', 'balance_due', 'invoice_number', 'status']
+
+
+    def get_total_paid(self, obj): 
+        return sum(p.amount for p in obj.payments.all())
 
     def create(self, validated_data):
         policy = validated_data['policy']

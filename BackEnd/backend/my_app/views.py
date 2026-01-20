@@ -229,3 +229,22 @@ class PaymentViewSet(generics.ListCreateAPIView):
     filterset_fields = ['invoice']
     ordering_fields = ['payment_date', 'amount']
     ordering = ['payment_date']
+
+    def perform_create(self, serializer):
+        payment = serializer.save()
+        update_invoice_status(payment.invoice)
+
+
+
+
+def update_invoice_status(invoice):
+    total_paid = invoice.payments.aggregate(total=Sum("amount"))["total"] or 0
+
+    if total_paid == 0:
+        invoice.status = "unpaid"
+    elif total_paid < invoice.total_amount:
+        invoice.status = "partially_paid"
+    else:
+        invoice.status = "paid"
+
+    invoice.save()
