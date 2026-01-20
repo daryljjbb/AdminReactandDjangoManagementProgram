@@ -141,13 +141,8 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        # This allows GET requests for everyone, 
-        # but requires login for POST, PUT, DELETE
-       "rest_framework.permissions.IsAuthenticatedOrReadOnly", 
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
-}
-
-REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
@@ -158,14 +153,26 @@ REST_FRAMEWORK = {
 }
 
 
+
+# Allow GitHub Pages to send cookies
 CSRF_TRUSTED_ORIGINS = [
+    "https://daryljjbb.github.io",
     "http://localhost:3000",
 ]
 
+# Required for cross-site cookies (GitHub Pages → localhost)
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://daryljjbb.github.io",
+    "http://localhost:3000",
+]
+
+
 # Change "None" to "Lax" for local development
-SESSION_COOKIE_SAMESITE = "Lax"
-SESSION_COOKIE_SECURE = False 
-
-CSRF_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SECURE = False
-
