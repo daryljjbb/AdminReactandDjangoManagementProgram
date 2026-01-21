@@ -68,3 +68,199 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+
+AdminReactandDjangoManagementProgram
+A full‑stack management system built with React (frontend) and Django REST Framework (backend).
+The frontend is deployed on GitHub Pages, while the backend runs locally (or can be deployed separately).
+
+This project includes:
+
+User authentication
+
+Admin‑only dashboard
+
+Customer management
+
+Protected routes
+
+Session‑based login
+
+Cross‑origin communication between GitHub Pages and Django
+
+
+⭐ Features
+🔐 Authentication
+Django session‑based login
+
+Protected routes in React
+
+Auto‑redirect for unauthorized users
+
+Admin‑only pages
+
+👥 Customer Management
+View all customers
+
+View customer details
+
+Pagination, search, and filtering
+
+🧭 Routing
+React Router with HashRouter for GitHub Pages
+
+Layout with sidebar + navbar
+
+Clean navigation structure
+
+🌐 Cross‑Origin Support
+GitHub Pages → Django communication
+
+CORS + CSRF configured for secure cookie handling
+
+📦 API Layer
+Axios instance with CSRF + credentials
+
+/me endpoint for authentication state
+
+CRUD endpoints for customers
+
+📁 Project Structure
+
+AdminReactandDjangoManagementProgram/
+│
+├── Backend/ (Django API)
+│   ├── manage.py
+│   ├── settings.py
+│   ├── api/
+│   └── ...
+│
+└── FrontEnd/
+    └── frontend/ (React App)
+        ├── src/
+        ├── public/
+        ├── package.json
+        └── ...
+
+
+🔐 Django CORS & CSRF Configuration
+Add this to settings.py:
+
+CORS_ALLOWED_ORIGINS = [
+    "https://daryljjbb.github.io",
+    "http://localhost:3000",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://daryljjbb.github.io",
+    "http://localhost:3000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
+
+
+🌐 Frontend Setup (React)
+Navigate into the React folder:
+
+cd FrontEnd/frontend
+
+npm install
+
+npm start
+
+
+🚀 Deploying React to GitHub Pages
+1. Install gh-pages
+
+npm install --save gh-pages
+
+2. Add homepage to package.json
+"homepage": "https://daryljjbb.github.io/AdminReactandDjangoManagementProgram"
+
+3. Add deploy scripts
+"scripts": {
+  "start": "react-scripts start",
+  "build": "react-scripts build",
+  "test": "react-scripts test",
+  "eject": "react-scripts eject",
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d build"
+}
+
+4. Deploy
+
+npm run build
+npm run deploy
+
+
+5. GitHub Pages Settings
+Go to:
+
+Repository → Settings → Pages
+
+Select Branch: gh-pages
+
+Save
+
+🔁 Routing on GitHub Pages
+GitHub Pages does not support server‑side routing.
+Use:
+
+import { HashRouter } from "react-router-dom";
+
+#/dashboard
+#/customers
+
+📚 API Documentation
+Authentication
+POST /api/login/
+Login with username + password.
+Returns session cookie.
+
+GET /api/me/
+Returns the currently authenticated user.
+
+Example response:
+
+{
+  "username": "admin",
+  "is_staff": true,
+  "is_superuser": false
+}
+
+Customers
+GET /api/customers/
+Returns paginated list of customers.
+
+GET /api/customers/:id/
+Returns details for a single customer.
+
+POST /api/customers/
+Create a new customer (admin only).
+
+PUT /api/customers/:id/
+Update customer.
+
+DELETE /api/customers/:id/
+Delete customer.
+
+
+🔧 Axios Configuration
+
+const api = axios.create({
+  baseURL: "http://localhost:8000/api/",
+  withCredentials: true,
+});
+
+api.interceptors.request.use(config => {
+  const csrf = getCookie("csrftoken");
+  if (csrf) config.headers["X-CSRFToken"] = csrf;
+  return config;
+});
