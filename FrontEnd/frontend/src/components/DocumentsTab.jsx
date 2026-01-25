@@ -42,6 +42,26 @@ const DocumentsTab = ({ customerId }) => {
     fetchDocuments();
   }, [customerId]);
 
+  const [deleteId, setDeleteId] = useState(null);
+const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+
+  const handleDelete = (id) => {
+  setDeleteId(id);
+  setShowDeleteConfirm(true);
+};
+
+const confirmDelete = () => {
+  api.delete(`documents/${deleteId}/`)
+    .then(() => {
+      fetchDocuments(); // refresh list
+      setShowDeleteConfirm(false);
+    })
+    .catch(err => console.error("Delete error:", err));
+};
+
+
+
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -75,10 +95,19 @@ const DocumentsTab = ({ customerId }) => {
                   <td>{doc.file_name}</td>
                   <td>{new Date(doc.uploaded_at).toLocaleDateString()}</td>
                   <td>
-                    <a href={doc.file_url} target="_blank" rel="noreferrer">
-                      View
+                    <a href={doc.file_url} target="_blank" rel="noreferrer" className="me-3">
+                        View
                     </a>
-                  </td>
+
+                    <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(doc.id)}
+                    >
+                        Delete
+                    </Button>
+                    </td>
+
                 </tr>
               ))
             )}
@@ -92,6 +121,40 @@ const DocumentsTab = ({ customerId }) => {
         customerId={customerId}
         onUploaded={fetchDocuments} // refresh after upload
       />
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+        <div className="modal-backdrop fade show"></div>
+        )}
+
+        <div
+        className={`modal fade ${showDeleteConfirm ? "show d-block" : ""}`}
+        tabIndex="-1"
+        >
+        <div className="modal-dialog">
+            <div className="modal-content">
+            <div className="modal-header">
+                <h5 className="modal-title">Confirm Delete</h5>
+                <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowDeleteConfirm(false)}
+                ></button>
+            </div>
+            <div className="modal-body">
+                <p>Are you sure you want to delete this document?</p>
+            </div>
+            <div className="modal-footer">
+                <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+                Cancel
+                </Button>
+                <Button variant="danger" onClick={confirmDelete}>
+                Delete
+                </Button>
+            </div>
+            </div>
+        </div>
+        </div>
+
     </div>
   );
 };
