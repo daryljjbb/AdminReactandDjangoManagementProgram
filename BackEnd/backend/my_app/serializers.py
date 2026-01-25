@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from .models import Customer, Policy, Invoice, Payment
+from django.contrib.auth.models import User
+from rest_framework import viewsets
+from rest_framework.serializers import ModelSerializer
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -91,3 +94,14 @@ class InvoiceSerializer(serializers.ModelSerializer):
         validated_data['status'] = 'unpaid'
 
         return super().create(validated_data)
+    
+
+
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "is_staff", "is_active"]
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

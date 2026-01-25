@@ -12,9 +12,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import CustomerSerializer, PolicySerializer, InvoiceSerializer, PaymentSerializer
+from .serializers import CustomerSerializer, PolicySerializer, InvoiceSerializer, PaymentSerializer, UserSerializer
 from datetime import datetime
-
+from django.contrib.auth.models import User
+from rest_framework import viewsets
 
 class CustomerListCreateView(generics.ListCreateAPIView):
     serializer_class = CustomerSerializer
@@ -281,3 +282,7 @@ class MonthlyRevenueView(APIView):
         ]
 
         return Response(formatted)
+    
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

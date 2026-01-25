@@ -1,8 +1,15 @@
 from django.urls import path
 from . import views
-from .views import MonthlyRevenueView
+from .views import MonthlyRevenueView, UserViewSet
+from django.urls import include
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register("users", UserViewSet)
 
 urlpatterns = [
+
+     path("", include(router.urls)),
     # ... your existing invoice paths ...
     path('customers/', views.CustomerListCreateView.as_view(), name='customer-list-create'),
     path('stats/', views.DashboardStatsView.as_view()),
