@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { Table, Button, Spinner } from "react-bootstrap";
 import UploadDocumentModal from "./UploadDocumentModal";
+import { toast } from "react-hot-toast";
 
 const DocumentsTab = ({ customerId }) => {
   const [documents, setDocuments] = useState([]);
@@ -47,17 +48,27 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
 
   const handleDelete = (id) => {
-  setDeleteId(id);
-  setShowDeleteConfirm(true);
-};
+    setDeleteId(id);
+    setShowDeleteConfirm(true);
+    toast("Are you sure you want to delete this document?", {
+        icon: "⚠️",
+    });
+    };
+
 
 const confirmDelete = () => {
+  const toastId = toast.loading("Deleting document...");
+
   api.delete(`documents/${deleteId}/`)
     .then(() => {
-      fetchDocuments(); // refresh list
+      toast.success("Document deleted successfully!", { id: toastId });
+      fetchDocuments();
       setShowDeleteConfirm(false);
     })
-    .catch(err => console.error("Delete error:", err));
+    .catch(err => {
+      console.error("Delete error:", err);
+      toast.error("Failed to delete document.", { id: toastId });
+    });
 };
 
 
