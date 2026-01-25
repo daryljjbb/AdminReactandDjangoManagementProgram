@@ -14,6 +14,9 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, I
 from rest_framework.decorators import api_view, permission_classes
 from .serializers import CustomerSerializer, PolicySerializer, InvoiceSerializer, PaymentSerializer, UserSerializer
 from datetime import datetime
+from datetime import timedelta
+from django.db.models import Count
+from django.utils.timezone import now
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 
@@ -286,3 +289,29 @@ class MonthlyRevenueView(APIView):
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+
+class CustomerGrowthView(APIView):
+    def get(self, request):
+        # Get customers created in the last 12 months
+        one_year_ago = now() - timedelta(days=365)
+        monthly_counts = (
+            Customer.objects.filter(created_at__gte=one_year_ago)
+            .annotate(month=TruncMonth("created_at"))
+            .values("month")
+            .annotate(count=Count("id"))
+            .order_by("month")
+        )
+
+        # Convert to cumulative format
+        cumulative = []
+        total = 0
+        for entry in monthly_counts:
+            total += entry["count"]
+            cumulative.append({
+                "month": entry["month"].strftime("%b %Y"),
+                "customers": total
+            })
+
+        return Response(cumulative)

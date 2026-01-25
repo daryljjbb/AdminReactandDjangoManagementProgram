@@ -17,6 +17,18 @@ const CreateInvoiceModal = ({ show, onHide, onSubmit, policy }) => {
 
   const [formData, setFormData] = useState(initialData);
 
+ useEffect(() => {
+  const base = Number(formData.amount) || 0;
+  const fee = Number(formData.agency_fee) || 0;
+
+  setFormData(prev => ({
+    ...prev,
+    total_amount: base + fee,
+  }));
+}, [formData.agency_fee, formData.amount]);
+
+
+
   useEffect(() => {
     if (show && policy) {
       setFormData({
@@ -82,6 +94,8 @@ const CreateInvoiceModal = ({ show, onHide, onSubmit, policy }) => {
 
     onHide();
   };
+
+  
 
   return (
     <Modal show={show} onHide={onHide}>
