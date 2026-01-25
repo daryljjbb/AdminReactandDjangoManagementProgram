@@ -1,15 +1,17 @@
 {
   "files": {
-    "main.css": "/AdminReactandDjangoManagementProgram/static/css/main.3982bb5f.css",
-    "main.js": "/AdminReactandDjangoManagementProgram/static/js/main.aed2c043.js",
+    "main.css": "/AdminReactandDjangoManagementProgram/static/css/main.ced6bffa.css",
+    "main.js": "/AdminReactandDjangoManagementProgram/static/js/main.54e07bf1.js",
     "static/js/453.03346f77.chunk.js": "/AdminReactandDjangoManagementProgram/static/js/453.03346f77.chunk.js",
+    "static/media/bootstrap-icons.woff?": "/AdminReactandDjangoManagementProgram/static/media/bootstrap-icons.1295669cd4e305c97f2c.woff",
+    "static/media/bootstrap-icons.woff2?": "/AdminReactandDjangoManagementProgram/static/media/bootstrap-icons.92ea18a81d737146ff04.woff2",
     "index.html": "/AdminReactandDjangoManagementProgram/index.html",
-    "main.3982bb5f.css.map": "/AdminReactandDjangoManagementProgram/static/css/main.3982bb5f.css.map",
-    "main.aed2c043.js.map": "/AdminReactandDjangoManagementProgram/static/js/main.aed2c043.js.map",
+    "main.ced6bffa.css.map": "/AdminReactandDjangoManagementProgram/static/css/main.ced6bffa.css.map",
+    "main.54e07bf1.js.map": "/AdminReactandDjangoManagementProgram/static/js/main.54e07bf1.js.map",
     "453.03346f77.chunk.js.map": "/AdminReactandDjangoManagementProgram/static/js/453.03346f77.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.3982bb5f.css",
-    "static/js/main.aed2c043.js"
+    "static/css/main.ced6bffa.css",
+    "static/js/main.54e07bf1.js"
   ]
 }
