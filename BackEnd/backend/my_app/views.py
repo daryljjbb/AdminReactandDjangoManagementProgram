@@ -5,14 +5,14 @@ from django.db.models.functions import TruncMonth
 from django.db.models import Sum
 from rest_framework import filters # 1. Make sure this is imported
 from django.contrib.auth.models import User
-from .models import Customer, Policy, Invoice, Payment
+from .models import Customer, Policy, Invoice, Payment, Document
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import CustomerSerializer, PolicySerializer, InvoiceSerializer, PaymentSerializer, UserSerializer
+from .serializers import CustomerSerializer, PolicySerializer, InvoiceSerializer, PaymentSerializer, UserSerializer, DocumentSerializer
 from datetime import datetime
 from datetime import timedelta
 from django.db.models import Count
@@ -212,7 +212,8 @@ class PolicyListCreateView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
 
-class InvoiceViewSet(generics.ListCreateAPIView):
+class InvoiceListCreateView(generics.ListCreateAPIView):
+
     serializer_class = InvoiceSerializer
     
     def get_queryset(self):
@@ -234,7 +235,8 @@ class InvoiceViewSet(generics.ListCreateAPIView):
         # Link the invoice to the logged-in user
         serializer.save(user=self.request.user)
 
-class PaymentViewSet(generics.ListCreateAPIView):
+class PaymentListCreateView(generics.ListCreateAPIView):
+
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
@@ -315,3 +317,16 @@ class CustomerGrowthView(APIView):
             })
 
         return Response(cumulative)
+
+
+class DocumentViewSet(viewsets.ModelViewSet):
+    queryset = Document.objects.all()
+    serializer_class = DocumentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        customer_id = self.request.query_params.get("customer")
+        if customer_id:
+            qs = qs.filter(customer_id=customer_id)
+        return qs

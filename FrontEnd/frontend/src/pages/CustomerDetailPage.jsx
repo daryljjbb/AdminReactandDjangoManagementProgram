@@ -9,6 +9,7 @@ import ReusableTabs from "../components/ReusableTabs";
 import CreatePolicyModal from "../components/CreatePolicyModal";
 import CreateInvoiceModal from "../components/CreateInvoiceModal";
 import CreatePaymentModal from "../components/CreatePaymentModal";
+import DocumentsTab from "../components/DocumentsTab";
 import PaymentHistoryModal from "../components/PaymentHistoryModal";
 import InvoiceProgressBar from "../components/InvoiceProgressBar";
 
@@ -270,6 +271,7 @@ const CustomerDetailPage = () => {
     { eventKey: "policies", title: "Policies", content: <PolicyContent /> },
     { eventKey: "invoices", title: "Invoices", content: <InvoiceContent /> },
     { eventKey: "appointments", title: "Appointments", content: <AppointmentContent /> },
+    { eventKey: "documents", title: "Documents", content: <DocumentsTab customerId={id} /> },
   ];
 
   // -----------------------------

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from .models import Customer, Policy, Invoice, Payment
+from .models import Customer, Policy, Invoice, Payment, Document
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.serializers import ModelSerializer
@@ -105,3 +105,16 @@ class UserSerializer(ModelSerializer):
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+
+class DocumentSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Document
+        fields = ["id", "customer", "file_name", "file_url", "uploaded_at", "file"]
+
+    def get_file_url(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.file.url)

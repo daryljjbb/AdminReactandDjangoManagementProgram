@@ -63,6 +63,7 @@ const CreateInvoiceModal = ({ show, onHide, onSubmit, policy }) => {
       label: "Total Amount",
       type: "number",
       required: true,
+      readOnly: true,
     },
     {
       name: "issue_date",
