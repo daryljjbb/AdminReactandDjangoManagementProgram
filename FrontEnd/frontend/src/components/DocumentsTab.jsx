@@ -3,6 +3,14 @@ import api from "../api/axios";
 import { Table, Button, Spinner } from "react-bootstrap";
 import UploadDocumentModal from "./UploadDocumentModal";
 import { toast } from "react-hot-toast";
+import {
+  AiFillFilePdf,
+  AiFillFileImage,
+  AiFillFileWord,
+  AiFillFileExcel,
+  AiFillFile
+} from "react-icons/ai";
+
 
 const DocumentsTab = ({ customerId }) => {
   const [documents, setDocuments] = useState([]);
@@ -71,6 +79,26 @@ const confirmDelete = () => {
     });
 };
 
+const getFileIcon = (fileName) => {
+  const ext = fileName.split(".").pop().toLowerCase();
+
+  switch (ext) {
+    case "pdf":
+      return <AiFillFilePdf size={22} color="#d9534f" />; // red
+    case "jpg":
+    case "jpeg":
+    case "png":
+      return <AiFillFileImage size={22} color="#0275d8" />; // blue
+    case "doc":
+    case "docx":
+      return <AiFillFileWord size={22} color="#1e90ff" />; // Word blue
+    case "xls":
+    case "xlsx":
+      return <AiFillFileExcel size={22} color="#5cb85c" />; // green
+    default:
+      return <AiFillFile size={22} color="#555" />; // gray default
+  }
+};
 
 
   return (
@@ -103,7 +131,11 @@ const confirmDelete = () => {
             ) : (
               documents.map(doc => (
                 <tr key={doc.id}>
-                  <td>{doc.file_name}</td>
+                  <td className="d-flex align-items-center gap-2">
+                    {getFileIcon(doc.file_name)}
+                    {doc.file_name}
+                    </td>
+
                   <td>{new Date(doc.uploaded_at).toLocaleDateString()}</td>
                   <td>
                     <a href={doc.file_url} target="_blank" rel="noreferrer" className="me-3">
