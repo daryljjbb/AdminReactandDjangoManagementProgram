@@ -1,4 +1,5 @@
 # core/models.py
+from datetime import timezone
 from django.db import models
 from django.conf import settings
 import uuid
@@ -39,6 +40,13 @@ class Policy(models.Model):
         ("home", "Home"),
         ("life", "Life"),
     ]
+
+    POLICY_STATUS = [
+        ("active", "Active"),
+        ("expired", "Expired"),
+        ("cancelled", "Cancelled"),
+    ]
+
     customer = models.ForeignKey(
         Customer,
         related_name="policies",
@@ -54,17 +62,34 @@ class Policy(models.Model):
     expiration_date = models.DateField()
     premium_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
-    # This links the invoice to a specific user
+    status = models.CharField(
+        max_length=20,
+        choices=POLICY_STATUS,
+        default="active"
+    )
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
         related_name="policies",
-        null=True, # Allow existing ones to be null for now
+        null=True,
         blank=True
     )
 
     def __str__(self):
-        return self.name
+        return f"{self.policy_number} - {self.policy_type}"
+    
+    def save(self, *args, **kwargs):
+        today = timezone.now().date()
+
+        if self.expiration_date < today:
+            self.status = "expired"
+        else:
+            self.status = "active"
+
+        super().save(*args, **kwargs)
+
+
     
 class Invoice(models.Model):
     STATUS_CHOICES = [

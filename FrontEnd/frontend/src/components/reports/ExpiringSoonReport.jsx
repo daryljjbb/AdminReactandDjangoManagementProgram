@@ -50,10 +50,10 @@ const ExpiringSoonReport = () => {
           ) : (
             results.map(p => (
               <tr key={p.id}>
-                <td>{p.customer.first_name} {p.customer.last_name}</td>
+                <td>{p.customer.name}</td>
                 <td>{p.policy_type}</td>
-                <td>{p.start_date}</td>
-                <td>{p.end_date}</td>
+                <td>{p.effective_date}</td>
+                <td>{p.expiration_date}</td>
                 <td>{p.status}</td>
               </tr>
             ))

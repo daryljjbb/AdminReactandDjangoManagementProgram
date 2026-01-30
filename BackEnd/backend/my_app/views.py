@@ -363,7 +363,7 @@ class ExpiredPoliciesReportView(APIView):
     def get(self, request):
         days = int(request.query_params.get("days", 0))
         cutoff = timezone.now().date() - timedelta(days=days)
-        qs = Policy.objects.filter(end_date__lte=cutoff)
+        qs = Policy.objects.filter(expiration_date__lte=cutoff)
         serializer = PolicyReportSerializer(qs, many=True)
         return Response(serializer.data)
 
@@ -375,7 +375,7 @@ class ExpiringSoonPoliciesReportView(APIView):
         days = int(request.query_params.get("days", 30))
         today = timezone.now().date()
         cutoff = today + timedelta(days=days)
-        qs = Policy.objects.filter(end_date__range=[today, cutoff])
+        qs = Policy.objects.filter(expiration_date__range=[today, cutoff])
         serializer = PolicyReportSerializer(qs, many=True)
         return Response(serializer.data)
 

@@ -132,7 +132,7 @@ class PolicyReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Policy
-        fields = ["id", "policy_type", "start_date", "end_date", "status", "customer"]
+        fields = ["id", "policy_type", "effective_date", "expiration_date", "status", "customer"]
 
 class InvoiceReportSerializer(serializers.ModelSerializer):
     customer = CustomerReportSerializer()
