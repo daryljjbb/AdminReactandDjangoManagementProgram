@@ -2,32 +2,68 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from my_app import views
-from .views import UserViewSet, DocumentViewSet, MonthlyRevenueView, CustomerGrowthView, DashboardStatsView, InvoiceListCreateView, PaymentListCreateView
+from .views import (
+    CustomerListCreateView,
+    CustomerDetailView,
+    PolicyListCreateView,
+    InvoiceListCreateView,
+    PaymentListCreateView,
+    DocumentViewSet,
+    UserViewSet,
+    MonthlyRevenueView,
+    CustomerGrowthView,
+    DashboardStatsView,
+    api_login, api_logout, api_register, me,
+)
+from .views import (
 
+    # Reports
+    BirthdayReportView,
+    ExpiredPoliciesReportView,
+    ExpiringSoonPoliciesReportView,
+    NoActivePoliciesReportView,
+    OverdueInvoicesReportView,
+    RevenueReportView,
+)
 
 
 router = DefaultRouter()
 router.register("users", UserViewSet)
 router.register("documents", DocumentViewSet)
 
+
 urlpatterns = [
     path("", include(router.urls)),
 
-    path('customers/', views.CustomerListCreateView.as_view()),
-    path('customers/<int:pk>/', views.CustomerDetailView.as_view()),
+    path('customers/', CustomerListCreateView.as_view()),
+    path('customers/<int:pk>/', CustomerDetailView.as_view()),
 
-    path('stats/', views.DashboardStatsView.as_view()),
+    path('stats/', DashboardStatsView.as_view()),
     path('dashboard/monthly-revenue/', MonthlyRevenueView.as_view()),
     path("dashboard/customer-growth/", CustomerGrowthView.as_view()),
 
-    path('policies/', views.PolicyListCreateView.as_view()),
-    path('invoices/', views.InvoiceListCreateView.as_view()),   # renamed
-    path('payments/', views.PaymentListCreateView.as_view()),   # renamed
+    path('policies/', PolicyListCreateView.as_view()),
+    path('invoices/',InvoiceListCreateView.as_view()),   # renamed
+    path('payments/',PaymentListCreateView.as_view()),   # renamed
 
-    path('login/', views.api_login),
-    path('logout/', views.api_logout),
-    path('register/', views.api_register),
-    path('me/', views.me),
+    path('login/', api_login),
+    path('logout/', api_logout),
+    path('register/', api_register),
+    path('me/', me),
+
+    path("reports/birthdays/", BirthdayReportView.as_view(), name="report-birthdays"),
+    path("reports/expired-policies/", ExpiredPoliciesReportView.as_view(), name="report-expired-policies"),
+    path("reports/expiring-soon/", ExpiringSoonPoliciesReportView.as_view(), name="report-expiring-soon"),
+    path("reports/no-active-policies/", NoActivePoliciesReportView.as_view(), name="report-no-active-policies"),
+    path("reports/overdue-invoices/", OverdueInvoicesReportView.as_view(), name="report-overdue-invoices"),
+    path("reports/revenue/", RevenueReportView.as_view(), name="report-revenue"),
 ]
+
+
+
+urlpatterns += router.urls
+
+
+
+
 

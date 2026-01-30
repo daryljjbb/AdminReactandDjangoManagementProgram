@@ -21,6 +21,10 @@ export default function Layout() {
                 <LinkContainer to="/customers">
                     <Nav.Link>Customers</Nav.Link>
                 </LinkContainer>
+                <LinkContainer to="/reports">
+                    <Nav.Link>Reports</Nav.Link>
+                </LinkContainer>
+
 
 
                 {/* ✅ ONLY SHOW TO ADMINS */}

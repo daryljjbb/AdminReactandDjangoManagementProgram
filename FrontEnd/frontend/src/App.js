@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Registration";
+import ReportsPage from "./components/reports/ReportsPage.jsx";
 import useAuth from "./hooks/useAuth";
 import { Toaster } from "react-hot-toast";
 
@@ -32,6 +33,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/customers/:id" element={<CustomerDetailPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
 
           
            {/* ADMIN ONLY PAGE */}

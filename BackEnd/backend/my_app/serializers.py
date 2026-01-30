@@ -118,3 +118,29 @@ class DocumentSerializer(serializers.ModelSerializer):
     def get_file_url(self, obj):
         request = self.context.get("request")
         return request.build_absolute_uri(obj.file.url)
+
+
+
+
+class CustomerReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = ["id", "name", "date_of_birth", "phone", "email"]
+
+class PolicyReportSerializer(serializers.ModelSerializer):
+    customer = CustomerReportSerializer()
+
+    class Meta:
+        model = Policy
+        fields = ["id", "policy_type", "start_date", "end_date", "status", "customer"]
+
+class InvoiceReportSerializer(serializers.ModelSerializer):
+    customer = CustomerReportSerializer()
+
+    class Meta:
+        model = Invoice
+        fields = ["id", "due_date", "is_paid", "total_amount", "customer"]
+
+class RevenuePointSerializer(serializers.Serializer):
+    month = serializers.CharField()
+    total = serializers.DecimalField(max_digits=12, decimal_places=2)

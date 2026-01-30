@@ -2,7 +2,7 @@ from rest_framework import generics, permissions
 from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
 from django.db.models.functions import TruncMonth
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from rest_framework import filters # 1. Make sure this is imported
 from django.contrib.auth.models import User
 from .models import Customer, Policy, Invoice, Payment, Document
@@ -19,6 +19,14 @@ from django.db.models import Count
 from django.utils.timezone import now
 from django.contrib.auth.models import User
 from rest_framework import viewsets
+from django.utils import timezone
+
+from .serializers import (
+    CustomerReportSerializer,
+    PolicyReportSerializer,
+    InvoiceReportSerializer,
+    RevenuePointSerializer,
+)
 
 class CustomerListCreateView(generics.ListCreateAPIView):
     serializer_class = CustomerSerializer
@@ -330,3 +338,102 @@ class DocumentViewSet(viewsets.ModelViewSet):
         if customer_id:
             qs = qs.filter(customer_id=customer_id)
         return qs
+
+
+
+
+
+
+
+class BirthdayReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        month = request.query_params.get("month")
+        qs = Customer.objects.all()
+        if month:
+            qs = qs.filter(date_of_birth__month=month)
+        serializer = CustomerReportSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class ExpiredPoliciesReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        days = int(request.query_params.get("days", 0))
+        cutoff = timezone.now().date() - timedelta(days=days)
+        qs = Policy.objects.filter(end_date__lte=cutoff)
+        serializer = PolicyReportSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class ExpiringSoonPoliciesReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        days = int(request.query_params.get("days", 30))
+        today = timezone.now().date()
+        cutoff = today + timedelta(days=days)
+        qs = Policy.objects.filter(end_date__range=[today, cutoff])
+        serializer = PolicyReportSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class NoActivePoliciesReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # assuming status="active" means active policy
+        active_customer_ids = Policy.objects.filter(status="active").values_list("customer_id", flat=True)
+        qs = Customer.objects.exclude(id__in=active_customer_ids)
+        serializer = CustomerReportSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class OverdueInvoicesReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        days = int(request.query_params.get("days", 0))
+        today = timezone.now().date()
+        cutoff = today - timedelta(days=days)
+
+        qs = Invoice.objects.filter(
+            is_paid=False,
+            due_date__lte=cutoff
+        ).select_related("customer")
+
+        serializer = InvoiceReportSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class RevenueReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Returns revenue by month for a given year.
+        ?year=2025
+        """
+        year = int(request.query_params.get("year", timezone.now().year))
+
+        payments = (
+            Payment.objects
+            .filter(created_at__year=year)
+            .annotate(month_str=timezone.functions.TruncMonth("created_at"))
+            .values("month_str")
+            .annotate(total=Sum("amount"))
+            .order_by("month_str")
+        )
+
+        data = [
+            {
+                "month": p["month_str"].strftime("%Y-%m"),
+                "total": p["total"],
+            }
+            for p in payments
+        ]
+
+        serializer = RevenuePointSerializer(data, many=True)
+        return Response(serializer.data)
