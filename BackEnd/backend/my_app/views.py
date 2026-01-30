@@ -153,7 +153,7 @@ class AdminStatsView(APIView):
 
 class DashboardStatsView(APIView):
     permission_classes = [IsAuthenticated]
-
+    
     def get(self, request):
         user = request.user
 
@@ -162,7 +162,7 @@ class DashboardStatsView(APIView):
             invoices = Invoice.objects.all()
         else:
             customers = Customer.objects.filter(user=user)
-            invoices = Invoice.objects.filter(customer__user=user)
+            invoices = Invoice.objects.filter(policy__customer__user=user)
 
         customer_count = customers.count()
         total_revenue = sum(inv.total_amount for inv in invoices if inv.status == "paid")

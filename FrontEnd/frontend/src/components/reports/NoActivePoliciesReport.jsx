@@ -40,7 +40,7 @@ const NoActivePoliciesReport = () => {
           ) : (
             results.map(c => (
               <tr key={c.id}>
-                <td>{c.first_name} {c.last_name}</td>
+                <td>{c.name}</td>
                 <td>{c.date_of_birth}</td>
                 <td>{c.phone}</td>
                 <td>{c.email}</td>

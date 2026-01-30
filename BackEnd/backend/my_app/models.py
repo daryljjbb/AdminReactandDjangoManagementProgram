@@ -1,6 +1,8 @@
 # core/models.py
 from datetime import timedelta
 from datetime import timezone
+from django.utils import timezone
+from django.utils.timezone import now
 from django.db import models
 from django.conf import settings
 import uuid
@@ -34,7 +36,7 @@ class Customer(models.Model):
     def __str__(self):
         return self.name
 
-    
+
 def generate_policy_renewal_reminders(days=30):
     today = timezone.now().date()
     cutoff = today + timedelta(days=days)
