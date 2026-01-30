@@ -21,6 +21,7 @@ from django.contrib.auth.models import User
 from rest_framework import viewsets
 from django.utils import timezone
 
+
 from .serializers import (
     CustomerReportSerializer,
     PolicyReportSerializer,
@@ -151,10 +152,15 @@ class AdminStatsView(APIView):
         pass
 
 
+from my_app.utils import generate_policy_renewal_reminders
+
 class DashboardStatsView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def get(self, request):
+        # 🔥 Auto-generate renewal reminders on dashboard load
+        generate_policy_renewal_reminders()
+
         user = request.user
 
         if user.is_staff:
@@ -170,14 +176,42 @@ class DashboardStatsView(APIView):
         paid_count = invoices.filter(status="paid").count()
         overdue_count = invoices.filter(status="overdue").count()
 
+       
+        today = timezone.now().date()
+        cutoff = today + timedelta(days=30)
+
+        # Policies expiring in the next 30 days
+        expiring_soon = Policy.objects.filter(
+            expiration_date__range=[today, cutoff],
+            status="active"
+        )
+
+        # Policies expiring this month
+        expiring_this_month = Policy.objects.filter(
+            expiration_date__year=today.year,
+            expiration_date__month=today.month,
+            status="active"
+        )
+
+        # Pending renewal reminders
+        pending_reminders = RenewalReminder.objects.filter(
+            acknowledged=False
+        )
+
+
         return Response({
             "customer_count": customer_count,
             "total_revenue": total_revenue,
             "unpaid_count": unpaid_count,
             "paid_count": paid_count,
             "overdue_count": overdue_count,
+            "renewals_this_month": expiring_this_month.count(),
+            "renewals_next_30_days": expiring_soon.count(),
+            "pending_renewal_reminders": pending_reminders.count(),
             "is_admin": user.is_staff
-        })
+    })
+
+
 
     
 # ✨ NEW Detail View (REQUIRED for /api/customers/1/)

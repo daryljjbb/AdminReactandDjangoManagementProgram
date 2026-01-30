@@ -101,6 +101,7 @@ const CustomerDetailPage = () => {
             <tr>
               <th>Policy Number</th>
               <th>Policy Type</th>
+              <th>Status</th>
               <th>Premium</th>
               <th>Actions</th>
             </tr>
@@ -110,6 +111,7 @@ const CustomerDetailPage = () => {
               <tr key={policy.id}>
                 <td>{policy.policy_number}</td>
                 <td>{policy.policy_type}</td>
+                <td>{policy.status}</td>
                 <td>{policy.premium_amount}</td>
                 <td>
                   <Link to={`/policies/${policy.id}`}>View</Link>

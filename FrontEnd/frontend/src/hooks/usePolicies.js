@@ -36,6 +36,7 @@ const usePolicies = (isAuthenticated, policyId = null, customerId = null) => {
       });
 
       setPolicies(data.results || data);
+      console.log("POLICIES STATE UPDATED:", data.results || data);
       setPagination({ count: data.count || 0, next: data.next, previous: data.previous });
     } catch (err) {
       setErrorPolicies("Failed to load policies");

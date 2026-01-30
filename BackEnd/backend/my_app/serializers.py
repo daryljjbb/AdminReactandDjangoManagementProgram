@@ -29,7 +29,7 @@ class PolicySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Policy
-        fields = ['id', 'customer', 'policy_number', 'policy_type', 'effective_date', 'expiration_date', 'premium_amount', 'customer_name']
+        fields = ['id', 'customer', 'policy_number', 'policy_type', 'effective_date', 'expiration_date', 'premium_amount', 'customer_name', 'status']
         read_only_fields = ['user']
 
     

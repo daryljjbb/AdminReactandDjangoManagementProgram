@@ -72,11 +72,31 @@ useEffect(() => {
           </Card>
         </Col>
       </Row>
-      <Row>
+      <Row className="mt-2">
         <Col md={4}>
           <Card className="text-center shadow-sm border-0 bg-danger text-white p-3">
             <Card.Title>Overdue Invoices</Card.Title>
             <h3>{stats.overdue_count}</h3>
+          </Card>
+        </Col>
+        <Col md={4}>
+          <Card className="text-center shadow-sm border-0 bg-danger text-white p-3">
+            <Card.Title>Renewals This Month</Card.Title>
+            <h3>{stats.renewals_this_month}</h3>
+          </Card>
+        </Col>
+         <Col md={4}>
+          <Card className="text-center shadow-sm border-0 bg-danger text-white p-3">
+            <Card.Title>Expiring in Next 30 Days</Card.Title>
+            <h3>{stats.renewals_next_30_days}</h3>
+          </Card>
+        </Col>
+      </Row>
+      <Row className="mt-2">
+         <Col md={4}>
+          <Card className="text-center shadow-sm border-0 bg-danger text-white p-3">
+            <Card.Title>Pending Renewal Reminders</Card.Title>
+            <h3>{stats.pending_renewal_reminders}</h3>
           </Card>
         </Col>
       </Row>
