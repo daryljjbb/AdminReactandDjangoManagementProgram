@@ -6,7 +6,7 @@ import ExpiringSoonReport from "./ExpiringSoonReport";
 import NoActivePoliciesReport from "./NoActivePoliciesReport";
 import OverdueInvoicesReport from "./OverdueInvoicesReport";
 import RevenueReport from "./RevenueReport";
-
+import RenewalRemindersReport from "./RenewalRemindersReport";
 const ReportsPage = () => {
   const [activeKey, setActiveKey] = useState("birthdays");
 
@@ -34,6 +34,10 @@ const ReportsPage = () => {
           <Nav.Item>
             <Nav.Link eventKey="revenue">Revenue</Nav.Link>
           </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="renewals">Renewal Reminders</Nav.Link>
+          </Nav.Item>
+
         </Nav>
 
         <Tab.Content className="mt-3">
@@ -55,6 +59,10 @@ const ReportsPage = () => {
           <Tab.Pane eventKey="revenue">
             <RevenueReport />
           </Tab.Pane>
+          <Tab.Pane eventKey="renewals">
+            <RenewalRemindersReport />
+          </Tab.Pane>
+
         </Tab.Content>
       </Tab.Container>
     </Container>

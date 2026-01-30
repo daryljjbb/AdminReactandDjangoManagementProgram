@@ -5,7 +5,7 @@ from django.db.models.functions import TruncMonth
 from django.db.models import Sum, Q
 from rest_framework import filters # 1. Make sure this is imported
 from django.contrib.auth.models import User
-from .models import Customer, Policy, Invoice, Payment, Document
+from .models import Customer, Policy, Invoice, Payment, Document, RenewalReminder
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -437,3 +437,31 @@ class RevenueReportView(APIView):
 
         serializer = RevenuePointSerializer(data, many=True)
         return Response(serializer.data)
+
+class RenewalReminderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if user.is_staff:
+            reminders = RenewalReminder.objects.filter(acknowledged=False)
+        else:
+            reminders = RenewalReminder.objects.filter(
+                acknowledged=False,
+                customer__user=user
+            )
+
+        data = [
+            {
+                "id": r.id,
+                "policy_number": r.policy.policy_number,
+                "policy_type": r.policy.policy_type,
+                "customer_name": r.customer.name,
+                "expiration_date": r.policy.expiration_date,
+                "reminder_date": r.reminder_date,
+            }
+            for r in reminders
+        ]
+
+        return Response(data)

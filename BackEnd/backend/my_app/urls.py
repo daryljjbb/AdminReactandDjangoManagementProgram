@@ -24,6 +24,7 @@ from .views import (
     NoActivePoliciesReportView,
     OverdueInvoicesReportView,
     RevenueReportView,
+    RenewalReminderView,
 )
 
 
@@ -57,6 +58,8 @@ urlpatterns = [
     path("reports/no-active-policies/", NoActivePoliciesReportView.as_view(), name="report-no-active-policies"),
     path("reports/overdue-invoices/", OverdueInvoicesReportView.as_view(), name="report-overdue-invoices"),
     path("reports/revenue/", RevenueReportView.as_view(), name="report-revenue"),
+    path("reports/renewal-reminders/", RenewalReminderView.as_view()),
+
 ]
 
 

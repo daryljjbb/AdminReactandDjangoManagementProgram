@@ -1,4 +1,5 @@
 # core/models.py
+from datetime import timedelta
 from datetime import timezone
 from django.db import models
 from django.conf import settings
@@ -32,7 +33,35 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.name
+
     
+def generate_policy_renewal_reminders(days=30):
+    today = timezone.now().date()
+    cutoff = today + timedelta(days=days)
+
+    expiring_policies = Policy.objects.filter(
+        expiration_date__range=[today, cutoff],
+        status="active"
+    )
+
+    reminders_created = 0
+
+    for policy in expiring_policies:
+        exists = RenewalReminder.objects.filter(
+            policy=policy,
+            reminder_date=policy.expiration_date
+        ).exists()
+
+        if not exists:
+            RenewalReminder.objects.create(
+                policy=policy,
+                customer=policy.customer,
+                reminder_date=policy.expiration_date
+            )
+            reminders_created += 1
+
+    return reminders_created
+
 class Policy(models.Model):
 
     POLICY_TYPE = [
@@ -89,7 +118,15 @@ class Policy(models.Model):
 
         super().save(*args, **kwargs)
 
+class RenewalReminder(models.Model):
+    policy = models.ForeignKey(Policy, on_delete=models.CASCADE, related_name="renewal_reminders")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    reminder_date = models.DateField()
+    acknowledged = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"Reminder for {self.policy.policy_number}"
     
 class Invoice(models.Model):
     STATUS_CHOICES = [
